@@ -1,0 +1,106 @@
+Implement the insertion inside iterative and recursive Binary search tree and compare their performance.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure of a node in the BST
+typedef struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Recursive insertion into BST
+Node* insertRecursive(Node* root, int data) {
+    if (root == NULL) {
+        return createNode(data);
+    }
+    if (data < root->data) {
+        root->left = insertRecursive(root->left, data);
+    } else if (data > root->data) {
+        root->right = insertRecursive(root->right, data);
+    }
+    return root;
+}
+
+// Iterative insertion into BST
+Node* insertIterative(Node* root, int data) {
+    Node* newNode = createNode(data);
+    if (root == NULL) {
+        return newNode;
+    }
+    Node* current = root;
+    Node* parent = NULL;
+    while (current != NULL) {
+        parent = current;
+        if (data < current->data) {
+            current = current->left;
+        } else {
+            current = current->right;
+        }
+    }
+    if (data < parent->data) {
+        parent->left = newNode;
+    } else {
+        parent->right = newNode;
+    }
+    return root;
+}
+
+// In-order traversal to display the BST
+void inOrder(Node* root) {
+    if (root != NULL) {
+        inOrder(root->left);
+        printf("%d ", root->data);
+        inOrder(root->right);
+    }
+}
+
+int main() {
+    Node* root = NULL;
+
+    printf("Choose Insertion Method:\n");
+    printf("1. Recursive\n");
+    printf("2. Iterative\n");
+    int choice;
+    scanf("%d", &choice);
+
+    int n, data;
+    printf("Enter the number of elements to insert: ");
+    scanf("%d", &n);
+
+    printf("Enter %d elements:\n", n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        if (choice == 1) {
+            root = insertRecursive(root, data);
+        } else if (choice == 2) {
+            root = insertIterative(root, data);
+        } else {
+            printf("Invalid choice!\n");
+            return 1;
+        }
+    }
+
+    printf("In-order traversal of BST: ");
+    inOrder(root);
+    printf("\n");
+
+    return 0;
+}
+
+
+
+
+
+
+

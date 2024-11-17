@@ -1,0 +1,47 @@
+Get a detailed insight of dynamic programming approach by the implementation of Matrix Chain Multiplication problem and see the impact of parenthesis positioning on 
+time requirements for matrix multiplication.
+
+#include <stdio.h>
+#include <limits.h>
+
+void matrixChainOrder(int p[], int n) {
+    int m[n][n], s[n][n]; // Cost and split index tables
+
+    for (int i = 1; i < n; i++) m[i][i] = 0; // Zero cost for single matrices
+
+    for (int L = 2; L < n; L++) {
+        for (int i = 1, j; i < n - L + 1; i++) {
+            j = i + L - 1;
+            m[i][j] = INT_MAX;
+
+            for (int k = i; k < j; k++) {
+                int q = m[i][k] + m[k + 1][j] + p[i - 1] * p[k] * p[j];
+                if (q < m[i][j]) m[i][j] = q, s[i][j] = k;
+            }
+        }
+    }
+
+    printf("Minimum multiplications: %d\n", m[1][n - 1]);
+
+    void printParenthesis(int i, int j) {
+        if (i == j) printf("A%d", i);
+        else {
+            printf("(");
+            printParenthesis(i, s[i][j]);
+            printParenthesis(s[i][j] + 1, j);
+            printf(")");
+        }
+    }
+
+    printf("Optimal Parenthesization: ");
+    printParenthesis(1, n - 1);
+    printf("\n");
+}
+
+int main() {
+    int p[] = {30, 35, 15, 5, 10, 20, 25};
+    int n = sizeof(p) / sizeof(p[0]);
+    matrixChainOrder(p, n);
+    return 0;
+}
+

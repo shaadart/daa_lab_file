@@ -1,0 +1,100 @@
+ Compare the Backtracking and Branch & Bound Approach by the implementation of 0/1 Knapsack problem. Also compare the performance with dynamic 
+programming approach.
+#include <stdio.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define MAX_SIZE 20
+
+typedef struct {
+    int value, weight;
+} Item;
+
+// Backtracking approach
+void knapsackBacktrack(Item items[], int n, int capacity, int index, int currentValue, int currentWeight, int *maxValue) {
+    if (currentWeight > capacity || index == n) {
+        if (currentValue > *maxValue) *maxValue = currentValue;
+        return;
+    }
+    knapsackBacktrack(items, n, capacity, index + 1, currentValue + items[index].value, currentWeight + items[index].weight, maxValue);
+    knapsackBacktrack(items, n, capacity, index + 1, currentValue, currentWeight, maxValue);
+}
+
+// Branch & Bound approach
+typedef struct {
+    int level, value, weight, bound;
+} Node;
+
+int bound(Node u, Item items[], int n, int capacity) {
+    if (u.weight >= capacity) return 0;
+    int profitBound = u.value, j = u.level + 1, totalWeight = u.weight;
+    while (j < n && totalWeight + items[j].weight <= capacity) {
+        totalWeight += items[j].weight;
+        profitBound += items[j].value;
+        j++;
+    }
+    if (j < n) profitBound += (capacity - totalWeight) * items[j].value / items[j].weight;
+    return profitBound;
+}
+
+int knapsackBranchBound(Item items[], int n, int capacity) {
+    Node u, v = {0, 0, 0, 0};
+    int maxProfit = 0;
+    v.bound = bound(v, items, n, capacity);
+    for (int i = 0; i < n; i++) {
+        u.level = i;
+        u.weight = v.weight + items[i].weight;
+        u.value = v.value + items[i].value;
+        if (u.weight <= capacity && u.value > maxProfit) maxProfit = u.value;
+        u.bound = bound(u, items, n, capacity);
+        if (u.bound > maxProfit) v = u;
+    }
+    return maxProfit;
+}
+
+// Dynamic Programming approach
+int knapsackDP(Item items[], int n, int capacity) {
+    int dp[n + 1][capacity + 1];
+    for (int i = 0; i <= n; i++) {
+        for (int w = 0; w <= capacity; w++) {
+            if (i == 0 || w == 0)
+                dp[i][w] = 0;
+            else if (items[i - 1].weight <= w)
+                dp[i][w] = (items[i - 1].value + dp[i - 1][w - items[i - 1].weight] > dp[i - 1][w])
+                               ? items[i - 1].value + dp[i - 1][w - items[i - 1].weight]
+                               : dp[i - 1][w];
+            else
+                dp[i][w] = dp[i - 1][w];
+        }
+    }
+    return dp[n][capacity];
+}
+
+// Performance comparison
+void compareKnapsackMethods(Item items[], int n, int capacity) {
+    clock_t start;
+    int maxValue;
+
+    // Backtracking
+    start = clock();
+    maxValue = 0;
+    knapsackBacktrack(items, n, capacity, 0, 0, 0, &maxValue);
+    printf("Backtracking: Max Value = %d, Time = %.5f sec\n", maxValue, (double)(clock() - start) / CLOCKS_PER_SEC);
+
+    // Branch & Bound
+    start = clock();
+    printf("Branch & Bound: Max Value = %d, Time = %.5f sec\n", knapsackBranchBound(items, n, capacity), (double)(clock() - start) / CLOCKS_PER_SEC);
+
+    // Dynamic Programming
+    start = clock();
+    printf("Dynamic Programming: Max Value = %d, Time = %.5f sec\n", knapsackDP(items, n, capacity), (double)(clock() - start) / CLOCKS_PER_SEC);
+}
+
+int main() {
+    Item items[] = {{60, 10}, {100, 20}, {120, 30}};
+    int n = sizeof(items) / sizeof(items[0]);
+    int capacity = 50;
+
+    compareKnapsackMethods(items, n, capacity);
+    return 0;
+}

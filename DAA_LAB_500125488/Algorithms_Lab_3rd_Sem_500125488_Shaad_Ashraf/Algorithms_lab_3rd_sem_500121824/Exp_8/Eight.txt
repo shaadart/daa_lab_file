@@ -1,0 +1,32 @@
+Implement the sum of subset.
+#include <stdio.h>
+
+#define MAX_SIZE 20
+
+void sumOfSubset(int arr[], int n, int target, int subset[], int size, int index) {
+    if (target == 0) { // If target is reached, print subset
+        for (int i = 0; i < size; i++) printf("%d ", subset[i]);
+        printf("\n");
+        return;
+    }
+    if (index == n || target < 0) return; // No further exploration
+
+    subset[size] = arr[index]; // Include current element
+    sumOfSubset(arr, n, target - arr[index], subset, size + 1, index + 1);
+    sumOfSubset(arr, n, target, subset, size, index + 1); // Exclude current element
+}
+
+void findSubsetSum(int arr[], int n, int target) {
+    int subset[MAX_SIZE];
+    sumOfSubset(arr, n, target, subset, 0, 0);
+}
+
+int main() {
+    int arr[] = {3, 34, 4, 12, 5, 2};
+    int target = 9;
+
+    printf("Subsets with sum %d:\n", target);
+    findSubsetSum(arr, sizeof(arr) / sizeof(arr[0]), target);
+
+    return 0;
+}
